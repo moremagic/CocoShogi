@@ -5,13 +5,13 @@
 package cocoshogi.core;
 
 /**
- * 盤を表現するクラス
- * int(32bit) * 3 で盤(bord)を表す 手番、駒種ごとに bord を持つ
+ * 盤を表現するクラス int(32bit) * 3 で盤(bord)を表す 手番、駒種ごとに bord を持つ
  *
  * @author moremagic
  */
 public class Bord {
     //ビットボード 手番 駒種 盤面
+
     private int[][][] bitBord;
     public static final int PLAN_SENTE = 0; //先手
     public static final int PLAN_GOTE = 1; //後手
@@ -68,6 +68,7 @@ public class Bord {
 
     /**
      * 先手bitbordデータ取得
+     *
      * @return bitbord
      */
     public int[] getBitBord_SenteAll() {
@@ -77,12 +78,13 @@ public class Bord {
                 ret[i] |= this.bitBord[PLAN_SENTE][koma][i];
             }
         }
-        
+
         return ret;
     }
-    
+
     /**
      * 後手bitbordデータ取得
+     *
      * @return bitbord
      */
     public int[] getBitBord_GoteAll() {
@@ -92,18 +94,19 @@ public class Bord {
                 ret[i] |= this.bitBord[PLAN_GOTE][koma][i];
             }
         }
-        
+
         return ret;
     }
-    
+
     /**
      * bitbordデータ取得
+     *
      * @return bitbord
      */
     public int[] getBitBord() {
-        return new BitBord(getBitBord_SenteAll()).or( new BitBord(getBitBord_GoteAll()) ).toBitBordArray();
+        return new BitBord(getBitBord_SenteAll()).or(new BitBord(getBitBord_GoteAll())).toBitBordArray();
     }
-    
+
     public String printBord() {
         StringBuilder sb = new StringBuilder();
         int lineCnt = 1;
@@ -174,8 +177,38 @@ public class Bord {
         }
         return sb.toString();
     }
-    
-    public String createAtackBord(int col, int row, int plan, int piece){
+
+    /**
+     * NLZ 最上位ビットを探す 左から数える
+     */
+    public static int countNlz(int x) {
+        int buf = x;
+
+        int cnt = 33;
+        while(buf != 0){
+            cnt--;
+            buf = buf >>> 1;
+        }
+        
+        System.out.println(String.format("%32s", Integer.toBinaryString(x)).replaceAll(" ", "0") + " -> " + cnt );
+        return cnt;
+    }
+
+    /**
+     * NTZ 最下位ビットを探す 右から数える
+     */
+    public static int countNtz(int x) {
+        int buf = x & (-x);
+        int cnt = 0;
+        while (buf != 0) {
+            cnt++;
+            buf = buf >>> 1;
+        }
+        System.out.println(String.format("%32s", Integer.toBinaryString(x)).replaceAll(" ", "0") + " -> " + cnt);
+        return cnt;
+    }
+
+    public String createAtackBord(int col, int row, int plan, int piece) {
         int[][][] atackbitbordIdx = new int[2][14][];
         atackbitbordIdx[PLAN_SENTE][FU] = new int[]{2, 0, 0}; //歩
         atackbitbordIdx[PLAN_SENTE][HI] = new int[]{}; //飛
@@ -193,29 +226,28 @@ public class Bord {
         atackbitbordIdx[PLAN_SENTE][GIX] = new int[]{7, 5, 2}; //銀成;
 
         StringBuilder sb = new StringBuilder();
-        for(int r = 0; r < 9 ;r++){
+        for (int r = 0; r < 9; r++) {
             String lineBuf;
-            try{
+            try {
                 int[] atack = atackbitbordIdx[plan][piece];
-                int line_num = atack[r - (row - (atack.length/2 + 1))] << 8 >> col;
-                
+                int line_num = atack[r - (row - (atack.length / 2 + 1))] << 8 >> col;
+
                 String buf = Integer.toBinaryString(line_num);
-                if(buf.length() > 9){
+                if (buf.length() > 9) {
                     buf = buf.substring(buf.length() - 9);
-                }     
-                lineBuf = String.format("%9s",buf);
-            }catch(ArrayIndexOutOfBoundsException e){
-                lineBuf = String.format("%9s","0");
+                }
+                lineBuf = String.format("%9s", buf);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                lineBuf = String.format("%9s", "0");
             }
-            
-            sb.append(lineBuf.replaceAll(" ", "0") ).append("\n");
+
+            sb.append(lineBuf.replaceAll(" ", "0")).append("\n");
         }
 
         return sb.toString();
     }
-    
-    public static int getPosition(int x, int y){
-        return (y != 0)?(y-1) * 9 + x: x+1;
-    }
 
+    public static int getPosition(int x, int y) {
+        return (y != 0) ? (y - 1) * 9 + x : x + 1;
+    }
 }
